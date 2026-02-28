@@ -296,6 +296,7 @@ header {
 }
 
 .compass-widget {
+  position: absolute;
   bottom: 80px;
   right: 24px;
   left: auto;
@@ -401,11 +402,13 @@ header {
 }
 
 .view-controls {
+  position: absolute;
   top: 24px;
   right: 24px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  z-index: 1000;
 }
 
 .control-btn {
