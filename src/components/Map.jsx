@@ -12,19 +12,15 @@ const MapController = ({ center, zoom }) => {
 };
 
 // Custom Compass Component
+// Custom Ornate Compass Component
 const Compass = () => {
     return (
-        <div className="widget compass-widget animated"
-            style={{ animationDelay: '0.6s' }}
-            title="Norte">
-            <CompassIcon
-                size={22}
-                className="compass-icon"
-                style={{
-                    color: "var(--accent)",
-                }}
-            />
-            <div style={{ fontSize: '10px', fontWeight: '900', marginTop: '2px', color: 'var(--text-main)', textAlign: 'center' }}>N</div>
+        <div className="compass-widget animated" style={{ animationDelay: '0.6s' }}>
+            <div className="compass-ornate">
+                <div className="compass-n-label">N</div>
+                <div className="compass-arrow-north"></div>
+                <div className="compass-arrow-south"></div>
+            </div>
         </div>
     );
 };

@@ -296,16 +296,87 @@ header {
 }
 
 .compass-widget {
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 50px;
+  bottom: 80px;
+  right: 24px;
+  left: auto;
+  transform: none;
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: help;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.compass-ornate {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compass-arrow-north {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 30px solid #ef4444;
+  /* Classic red north */
+  position: absolute;
+  top: 0;
+}
+
+.compass-arrow-south {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 30px solid var(--text-main);
+  position: absolute;
+  bottom: 0;
+}
+
+.compass-n-label {
+  position: absolute;
+  top: -20px;
+  font-family: 'Georgia', serif;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+/* Classic Print Scale Style */
+.leaflet-control-scale-line {
+  background: white !important;
+  color: black !important;
+  border: 2px solid black !important;
+  border-top: none !important;
+  font-weight: 800 !important;
+  font-family: 'Courier New', monospace !important;
+  height: 12px !important;
+  line-height: 10px !important;
+  margin-bottom: 5px !important;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2) !important;
+}
+
+@media (max-width: 768px) {
+  .compass-widget {
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 16px;
+  }
+
+  .compass-ornate {
+    transform: scale(0.7);
+  }
 }
 
 .legend-widget {
