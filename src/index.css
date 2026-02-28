@@ -10,25 +10,24 @@
 }
 
 [data-theme='dark'] {
-  --bg-dark: #1e293b;
-  /* Lighter dark */
-  --bg-sidebar: #334155;
-  --bg-card: rgba(51, 65, 85, 0.7);
-  --text-main: #f8fafc;
+  --bg-dark: #0f172a;
+  --bg-sidebar: #1e293b;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --text-main: #f1f5f9;
   --text-muted: #94a3b8;
   --border-color: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(51, 65, 85, 1);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(30, 41, 59, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme='light'] {
-  --bg-dark: #f1f5f9;
+  --bg-dark: #f8fafc;
   --bg-sidebar: #ffffff;
   --bg-card: rgba(255, 255, 255, 0.8);
-  --text-main: #1e293b;
+  --text-main: #0f172a;
   --text-muted: #64748b;
-  --border-color: rgba(0, 0, 0, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.95);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(0, 0, 0, 0.05);
 }
 
@@ -45,7 +44,18 @@ body {
   overflow: hidden;
   height: 100vh;
   width: 100vw;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  font-size: 16px;
+}
+
+/* Fluid Typography */
+.text-responsive {
+  font-size: clamp(0.75rem, 0.9vw + 0.6rem, 1.125rem);
+}
+
+.title-responsive {
+  font-size: clamp(1rem, 1.5vw + 0.5rem, 1.5rem);
+  font-weight: 700;
 }
 
 #root {
@@ -104,7 +114,37 @@ header {
   flex-direction: column;
   overflow-y: auto;
   z-index: 900;
-  transition: width 0.3s ease;
+  transition: transform 0.3s ease, width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .secondary-header {
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  #mobile-menu-btn {
+    display: flex !important;
+  }
 }
 
 .sidebar-section {

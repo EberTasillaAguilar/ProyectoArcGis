@@ -41,7 +41,7 @@ const LayerControl = ({ layers, onToggleLayer }) => {
       <div className="layer-list">
         {layers.map((layer) => (
           <div key={layer.id} className="layer-item">
-            <div 
+            <div
               className={`checkbox-custom ${layer.visible ? 'checked' : ''}`}
               onClick={() => onToggleLayer(layer.id)}
             >
@@ -56,30 +56,30 @@ const LayerControl = ({ layers, onToggleLayer }) => {
   );
 };
 
-const Sidebar = ({ activeMap, onMapSelect, layers, onToggleLayer }) => {
+const Sidebar = ({ activeMap, onMapSelect, layers, onToggleLayer, isOpen }) => {
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <MapSelector activeMap={activeMap} onMapSelect={onMapSelect} />
       <LayerControl layers={layers} onToggleLayer={onToggleLayer} />
-      
+
       <div className="sidebar-section" style={{ flex: 1 }}>
         <div className="sidebar-title">
           <span>Legend</span>
           <Info size={16} />
         </div>
         <div className="legend-list">
-            <div className="legend-item">
-                <div className="color-dot" style={{ backgroundColor: '#3b82f6' }}></div>
-                <span style={{ fontSize: '0.75rem' }}>Major Roads</span>
-            </div>
-            <div className="legend-item">
-                <div className="color-dot" style={{ backgroundColor: '#10b981' }}></div>
-                <span style={{ fontSize: '0.75rem' }}>Green Areas</span>
-            </div>
-            <div className="legend-item">
-                <div className="color-dot" style={{ backgroundColor: '#f59e0b' }}></div>
-                <span style={{ fontSize: '0.75rem' }}>Buildings</span>
-            </div>
+          <div className="legend-item">
+            <div className="color-dot" style={{ backgroundColor: '#3b82f6' }}></div>
+            <span style={{ fontSize: '0.75rem' }}>Major Roads</span>
+          </div>
+          <div className="legend-item">
+            <div className="color-dot" style={{ backgroundColor: '#10b981' }}></div>
+            <span style={{ fontSize: '0.75rem' }}>Green Areas</span>
+          </div>
+          <div className="legend-item">
+            <div className="color-dot" style={{ backgroundColor: '#f59e0b' }}></div>
+            <span style={{ fontSize: '0.75rem' }}>Buildings</span>
+          </div>
         </div>
       </div>
 

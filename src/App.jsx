@@ -10,8 +10,10 @@ function App() {
   const [center, setCenter] = useState([-7.165, -78.508]); // Cajamarca, Peru
   const [zoom, setZoom] = useState(16);
   const [theme, setTheme] = useState('dark');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  const toggleSidebar = () => setIsSidebarOpen(prev => !isSidebarOpen);
 
   // Load GeoJSON data based on map selection
   useEffect(() => {
@@ -97,7 +99,9 @@ function App() {
           <div className="control-btn" style={{ background: 'transparent', border: 'none' }}><Bell size={18} /></div>
           <div className="control-btn" style={{ background: 'transparent', border: 'none' }}><Database size={18} /></div>
           <div className="control-btn" style={{ background: 'transparent', border: 'none' }}><User size={18} /></div>
-          <Menu size={20} style={{ marginLeft: '10px', cursor: 'pointer' }} />
+          <div className="control-btn" onClick={toggleSidebar} style={{ display: 'none', marginLeft: '10px' }} id="mobile-menu-btn">
+            <Menu size={22} />
+          </div>
         </div>
       </header>
 
@@ -112,7 +116,13 @@ function App() {
       </div>
 
       <div className="main-content">
-        <Sidebar activeMap={activeMap} onMapSelect={handleMapSelect} layers={layers} onToggleLayer={handleToggleLayer} />
+        <Sidebar
+          activeMap={activeMap}
+          onMapSelect={handleMapSelect}
+          layers={layers}
+          onToggleLayer={handleToggleLayer}
+          isOpen={isSidebarOpen}
+        />
         <Map layers={layers} center={center} zoom={zoom} theme={theme} />
       </div>
 
