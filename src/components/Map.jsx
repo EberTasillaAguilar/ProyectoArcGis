@@ -21,21 +21,26 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
     const onEachFeature = (feature, layer) => {
         if (feature.properties) {
             const props = feature.properties;
-            let content = `<div style="color: #1e293b; font-family: 'Inter', sans-serif; min-width: 150px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #3b82f6; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-                    ${props.Nombre || props.name || 'Detalles'}
-                </h3>
-                <div style="font-size: 12px; display: grid; gap: 4px;">`;
+            const popupBg = theme === 'dark' ? '#1e293b' : '#ffffff';
+            const popupText = theme === 'dark' ? '#ffffff' : '#1e293b';
+            const borderColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
 
-            // Add all available properties dynamically
+            let content = `<div style="background: ${popupBg}; color: ${popupText}; font-family: 'Inter', sans-serif; min-width: 180px; padding: 8px; border-radius: 8px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 15px; color: #3b82f6; border-bottom: 2px solid ${borderColor}; padding-bottom: 6px; font-weight: 700;">
+                    ${props.Nombre || props.name || 'Detalles de Capa'}
+                </h3>
+                <div style="font-size: 13px; display: grid; gap: 6px; opacity: 0.9;">`;
+
             Object.entries(props).forEach(([key, value]) => {
-                if (key !== 'FID' && value !== 0 && value !== null && key !== 'color') {
-                    content += `<div><b>${key}:</b> ${value}</div>`;
+                if (key !== 'FID' && value !== 0 && value !== null && key !== 'color' && key !== 'Nombre' && key !== 'name') {
+                    content += `<div><b style="color: ${theme === 'dark' ? '#94a3b8' : '#64748b'}">${key}:</b> ${value}</div>`;
                 }
             });
 
             content += `</div></div>`;
-            layer.bindPopup(content);
+            layer.bindPopup(content, {
+                className: 'custom-popup'
+            });
         }
     };
 
@@ -43,13 +48,28 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
         const layerInfo = layers.find(l => l.data && l.data.features.some(f => f === feature)) || {};
         const isLine = feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString';
 
+        // Logic to fix black lines in dark mode
+        let finalColor = layerInfo.color || '#3b82f6';
+
+        if (theme === 'dark') {
+            // If color is black or very dark, make it white/light
+            if (finalColor === '#000000' || finalColor === 'black' || finalColor === '#222222') {
+                finalColor = '#f8fafc'; // Clean white
+            }
+        } else {
+            // In light mode, if color is white, make it dark
+            if (finalColor === '#ffffff' || finalColor === 'white' || finalColor === '#f8fafc') {
+                finalColor = '#1e293b'; // Clean dark
+            }
+        }
+
         return {
             fillColor: layerInfo.color || '#3b82f6',
-            weight: isLine ? 3 : 2,
+            weight: isLine ? 3.5 : 2,
             opacity: 1,
-            color: layerInfo.color || 'white',
+            color: finalColor,
             dashArray: isLine ? '' : '3',
-            fillOpacity: isLine ? 0 : 0.6
+            fillOpacity: isLine ? 0 : 0.65
         };
     };
 
@@ -59,32 +79,33 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
     return (
         <div className="map-view">
             <div className="widget search-widget animated" style={{ animationDelay: '0.2s' }}>
-                <Search size={18} color="#94a3b8" />
-                <input type="text" placeholder="Search for locations, layers..." />
+                <Search size={18} color={theme === 'dark' ? "#94a3b8" : "#64748b"} />
+                <input type="text" placeholder="Buscar ubicaciones o capas..." style={{ color: "var(--text-main)" }} />
             </div>
 
             <div className="view-controls">
-                <div className="control-btn" title="Zoom In"><ZoomIn size={20} /></div>
-                <div className="control-btn" title="Zoom Out"><ZoomOut size={20} /></div>
-                <div className="control-btn" title="Full Screen"><Maximize size={20} /></div>
+                <div className="control-btn" title="Acercar"><ZoomIn size={20} /></div>
+                <div className="control-btn" title="Alejar"><ZoomOut size={20} /></div>
+                <div className="control-btn" title="Pantalla Completa"><Maximize size={20} /></div>
             </div>
 
             <div className="widget legend-widget animated" style={{ animationDelay: '0.4s' }}>
                 <div className="sidebar-title">
-                    <span>Layer Legend</span>
+                    <span style={{ color: "var(--text-main)", fontWeight: 700 }}>Leyenda de Capas</span>
                     <Layers size={14} />
                 </div>
                 <div className="legend-list">
                     {layers.map(l => (
-                        <div key={l.id} className="legend-item">
+                        <div key={l.id} className="legend-item" style={{ opacity: l.visible ? 1 : 0.4 }}>
                             <div className="color-dot" style={{ backgroundColor: l.color }}></div>
-                            <span style={{ fontSize: '0.75rem' }}>{l.name}</span>
+                            <span style={{ fontSize: '0.8rem', color: "var(--text-main)" }}>{l.name}</span>
                         </div>
                     ))}
+                    {layers.length === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No hay capas activas.</span>}
                 </div>
             </div>
 
-            <MapContainer center={center} zoom={zoom} scrollWheelZoom={true} zoomControl={false}>
+            <MapContainer center={center} zoom={zoom} scrollWheelZoom={true} zoomControl={false} style={{ width: '100%', height: '100%' }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url={theme === 'dark' ? darkTiles : lightTiles}
@@ -94,7 +115,7 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
                 {activeLayers.map((layer) => (
                     layer.data && (
                         <GeoJSON
-                            key={`${layer.id}-${JSON.stringify(layer.data).length}`}
+                            key={`${layer.id}-${JSON.stringify(layer.data).length}-${theme}`}
                             data={layer.data}
                             style={geojsonStyle}
                             onEachFeature={onEachFeature}

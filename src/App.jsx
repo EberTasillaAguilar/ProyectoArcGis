@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Map from './components/Map';
-import { Globe, Map as MapIcon, Database, Terminal, Menu, Bell, User } from 'lucide-react';
+import { Globe, Database, Menu, Bell, User, Map as MapIcon } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  const toggleSidebar = () => setIsSidebarOpen(prev => !isSidebarOpen);
+  const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
   // Load GeoJSON data based on map selection
   useEffect(() => {
@@ -25,23 +25,23 @@ function App() {
           mapLayers = [
             { id: 101, name: 'Parques', visible: true, color: '#10b981', url: `/maps/Map1/prueba_wgs84.json` },
             { id: 102, name: 'Calles de Cajamarca', visible: true, color: '#000000', url: `/maps/Map1/calles_wgs84.json` },
-            { id: 103, name: 'Admin Boundaries', visible: false, color: '#3b82f6', url: `/maps/Map1/layer1.json` }
+            { id: 103, name: 'Límites Administrativos', visible: false, color: '#3b82f6', url: `/maps/Map1/layer1.json` }
           ];
           break;
         case 2:
           mapLayers = [
-            { id: 201, name: 'Parks & Recreation', visible: true, color: '#10b981', url: `/maps/Map2/layer1.json` },
-            { id: 202, name: 'Hydrology', visible: true, color: '#3b82f6', url: `/maps/Map2/layer2.json` }
+            { id: 201, name: 'Parques y Recreación', visible: true, color: '#10b981', url: `/maps/Map2/layer1.json` },
+            { id: 202, name: 'Hidrología', visible: true, color: '#3b82f6', url: `/maps/Map2/layer2.json` }
           ];
           break;
         case 3:
           mapLayers = [
-            { id: 301, name: 'Utility Networks', visible: true, color: '#f59e0b', url: `/maps/Map3/layer1.json` }
+            { id: 301, name: 'Red de Servicios', visible: true, color: '#f59e0b', url: `/maps/Map3/layer1.json` }
           ];
           break;
         case 4:
           mapLayers = [
-            { id: 401, name: 'Demographics', visible: true, color: '#8b5cf6', url: `/maps/Map4/layer1.json` }
+            { id: 401, name: 'Demografía', visible: true, color: '#8b5cf6', url: `/maps/Map4/layer1.json` }
           ];
           break;
         default:
@@ -56,7 +56,7 @@ function App() {
             return { ...layer, data };
           }
         } catch (error) {
-          console.warn(`Could not load geojson for ${layer.name}:`, error);
+          console.warn(`No se pudo cargar geojson para ${layer.name}:`, error);
         }
         return { ...layer, data: null };
       }));
@@ -80,38 +80,54 @@ function App() {
       setCenter([4.61, -74.05]);
       setZoom(13);
     }
+    // Auto close sidebar on mobile after map selection
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
   };
+
+  const accentColor = theme === 'dark' ? '#60a5fa' : '#2563eb';
 
   return (
     <div className="app-container" data-theme={theme}>
-      <header>
-        <div className="logo">
-          <Globe className="animated" style={{ color: '#3b82f6' }} />
-          <span>GEO-INTERFACE <span style={{ fontWeight: 400, opacity: 0.6 }}>PRO</span></span>
+      <header style={{ borderBottom: `2px solid ${accentColor}33` }}>
+        <div className="logo" style={{ cursor: 'pointer' }} onClick={() => window.location.reload()}>
+          <Globe className="animated" style={{ color: accentColor }} size={28} />
+          <span className="title-responsive" style={{ textTransform: 'uppercase' }}>
+            GEO-INTERFACE <span style={{ fontWeight: 400, opacity: 0.5 }}>PRO</span>
+          </span>
         </div>
 
         <div style={{ flex: 1 }}></div>
 
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <div className="control-btn" onClick={toggleTheme} title="Cambiar Tema">
-            <Globe size={18} />
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="control-btn"
+            onClick={toggleTheme}
+            title="Cambiar Tema"
+            style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', width: '45px', height: '45px', borderRadius: '12px' }}>
+            <Globe size={22} style={{ color: accentColor, transform: theme === 'light' ? 'rotate(180deg)' : 'none', transition: 'all 0.5s ease' }} />
           </div>
-          <div className="control-btn" style={{ background: 'transparent', border: 'none' }}><Bell size={18} /></div>
-          <div className="control-btn" style={{ background: 'transparent', border: 'none' }}><Database size={18} /></div>
-          <div className="control-btn" style={{ background: 'transparent', border: 'none' }}><User size={18} /></div>
-          <div className="control-btn" onClick={toggleSidebar} style={{ display: 'none', marginLeft: '10px' }} id="mobile-menu-btn">
+
+          {/* Mobile indicator for sidebar status */}
+          <div className="control-btn"
+            onClick={toggleSidebar}
+            id="mobile-menu-btn"
+            style={{ background: isSidebarOpen ? accentColor : 'rgba(255,255,255,0.1)', color: isSidebarOpen ? 'white' : 'inherit', width: '45px', height: '45px', borderRadius: '12px' }}>
             <Menu size={22} />
           </div>
+
+          <div className="control-btn" style={{ background: 'transparent', border: 'none', display: 'flex' }}><Bell size={20} /></div>
+          <div className="control-btn" style={{ background: 'transparent', border: 'none', display: 'flex' }}><User size={20} /></div>
         </div>
       </header>
 
-      <div className="secondary-header">
-        <div className="label-badge" style={{ backgroundColor: 'rgba(59, 130, 246, 0.2)', padding: '4px 12px', borderRadius: '100px', fontSize: '0.75rem', color: '#60a5fa' }}>
-          Project: Regional Planning
+      <div className="secondary-header" style={{ background: theme === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)' }}>
+        <div className="label-badge" style={{ backgroundColor: `${accentColor}22`, padding: '6px 16px', borderRadius: '100px', fontSize: '0.8rem', color: accentColor, fontWeight: 700, border: `1px solid ${accentColor}44` }}>
+          Proyecto: Planificación Cajamarca
         </div>
-        <div style={{ fontSize: '0.875rem', opacity: 0.6 }}>/</div>
-        <div style={{ fontSize: '0.875rem', opacity: 1, fontWeight: 500 }}>
-          View: {activeMap === 1 ? 'City Infrastructure' : activeMap === 2 ? 'Environmental' : activeMap === 3 ? 'Utilities' : 'Sociocultural'}
+        <div style={{ fontSize: '0.9rem', opacity: 0.4 }}>/</div>
+        <div style={{ fontSize: '0.9rem', opacity: 1, fontWeight: 700, color: 'var(--text-main)' }}>
+          {activeMap === 1 ? 'Infraestructura Urbana' : activeMap === 2 ? 'Ambiental' : activeMap === 3 ? 'Servicios Públicos' : 'Mapa Social'}
         </div>
       </div>
 
@@ -126,14 +142,17 @@ function App() {
         <Map layers={layers} center={center} zoom={zoom} theme={theme} />
       </div>
 
-      <div className="status-bar" style={{ height: '32px', background: 'var(--bg-sidebar)', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 24px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+      <div className="status-bar" style={{ height: '36px', background: 'var(--bg-sidebar)', borderTop: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 24px', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
         <div style={{ display: 'flex', gap: '20px' }}>
-          <span>LAT: {center[0].toFixed(4)}</span>
-          <span>LON: {center[1].toFixed(4)}</span>
-          <span>EPSG: 4326</span>
+          <span>LAT: {center[0].toFixed(5)}</span>
+          <span>LON: {center[1].toFixed(5)}</span>
+          <span>EPSG: 4326 (WGS84)</span>
         </div>
         <div style={{ flex: 1 }}></div>
-        <div>READY</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 5px #10b981' }}></div>
+          SISTEMA ACTIVO
+        </div>
       </div>
     </div>
   );
