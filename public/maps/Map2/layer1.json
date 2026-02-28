@@ -1,0 +1,29 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Line 1",
+                "type": "Path"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -74.01,
+                        4.61
+                    ],
+                    [
+                        -74.02,
+                        4.62
+                    ],
+                    [
+                        -74.03,
+                        4.63
+                    ]
+                ]
+            }
+        }
+    ]
+}
