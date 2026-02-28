@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap, ScaleControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, ZoomIn, ZoomOut, Layers, Maximize } from 'lucide-react';
+import { Search, ZoomIn, ZoomOut, Layers, Maximize, Compass as CompassIcon } from 'lucide-react';
 
 const MapController = ({ center, zoom }) => {
     const map = useMap();
@@ -9,6 +9,24 @@ const MapController = ({ center, zoom }) => {
         map.setView(center, zoom);
     }, [center, zoom, map]);
     return null;
+};
+
+// Custom Compass Component
+const Compass = () => {
+    return (
+        <div className="widget compass-widget animated"
+            style={{ animationDelay: '0.6s' }}
+            title="Norte">
+            <CompassIcon
+                size={22}
+                className="compass-icon"
+                style={{
+                    color: "var(--accent)",
+                }}
+            />
+            <div style={{ fontSize: '10px', fontWeight: '900', marginTop: '2px', color: 'var(--text-main)', textAlign: 'center' }}>N</div>
+        </div>
+    );
 };
 
 const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
@@ -48,18 +66,15 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
         const layerInfo = layers.find(l => l.data && l.data.features.some(f => f === feature)) || {};
         const isLine = feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString';
 
-        // Logic to fix black lines in dark mode
         let finalColor = layerInfo.color || '#3b82f6';
 
         if (theme === 'dark') {
-            // If color is black or very dark, make it white/light
             if (finalColor === '#000000' || finalColor === 'black' || finalColor === '#222222') {
-                finalColor = '#f8fafc'; // Clean white
+                finalColor = '#f8fafc';
             }
         } else {
-            // In light mode, if color is white, make it dark
             if (finalColor === '#ffffff' || finalColor === 'white' || finalColor === '#f8fafc') {
-                finalColor = '#1e293b'; // Clean dark
+                finalColor = '#1e293b';
             }
         }
 
@@ -89,6 +104,8 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
                 <div className="control-btn" title="Pantalla Completa"><Maximize size={20} /></div>
             </div>
 
+            <Compass />
+
             <div className="widget legend-widget animated" style={{ animationDelay: '0.4s' }}>
                 <div className="sidebar-title">
                     <span style={{ color: "var(--text-main)", fontWeight: 700 }}>Leyenda de Capas</span>
@@ -101,7 +118,6 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
                             <span style={{ fontSize: '0.8rem', color: "var(--text-main)" }}>{l.name}</span>
                         </div>
                     ))}
-                    {layers.length === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No hay capas activas.</span>}
                 </div>
             </div>
 
@@ -111,6 +127,7 @@ const Map = ({ layers, center = [4.6, -74.0], zoom = 12, theme = 'dark' }) => {
                     url={theme === 'dark' ? darkTiles : lightTiles}
                 />
                 <MapController center={center} zoom={zoom} />
+                <ScaleControl position="bottomleft" imperial={false} />
 
                 {activeLayers.map((layer) => (
                     layer.data && (

@@ -23,7 +23,7 @@ const MapSelector = ({ activeMap, onMapSelect }) => {
             onClick={() => onMapSelect(map.id)}
           >
             {map.icon}
-            <span className="text-responsive" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{map.name}</span>
+            <span className="text-responsive" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-main)' }}>{map.name}</span>
           </div>
         ))}
       </div>

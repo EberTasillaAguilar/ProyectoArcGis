@@ -179,8 +179,8 @@ header {
 }
 
 .map-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
@@ -190,28 +190,29 @@ header {
   align-items: center;
   gap: 8px;
   text-align: center;
+  color: var(--text-main);
+}
+
+.map-card i,
+.map-card svg {
+  color: var(--accent);
 }
 
 .map-card:hover {
   transform: translateY(-4px);
-  border-color: var(--primary);
-  background: rgba(59, 130, 246, 0.1);
+  border-color: var(--accent);
+  background: var(--glass-bg);
 }
 
 .map-card.active {
-  border-color: var(--primary);
-  background: rgba(59, 130, 246, 0.2);
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white !important;
 }
 
-.map-card i {
-  font-size: 1.5rem;
-  color: var(--primary);
-}
-
-.map-card span {
-  font-size: 0.75rem;
-  font-weight: 500;
+.map-card.active span,
+.map-card.active svg {
+  color: white !important;
 }
 
 .layer-list {
@@ -292,6 +293,19 @@ header {
   flex: 1;
   outline: none;
   font-size: 0.875rem;
+}
+
+.compass-widget {
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
 }
 
 .legend-widget {

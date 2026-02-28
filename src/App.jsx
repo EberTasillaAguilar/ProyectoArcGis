@@ -24,8 +24,7 @@ function App() {
         case 1:
           mapLayers = [
             { id: 101, name: 'Parques', visible: true, color: '#10b981', url: `/maps/Map1/prueba_wgs84.json` },
-            { id: 102, name: 'Calles de Cajamarca', visible: true, color: '#000000', url: `/maps/Map1/calles_wgs84.json` },
-            { id: 103, name: 'Límites Administrativos', visible: false, color: '#3b82f6', url: `/maps/Map1/layer1.json` }
+            { id: 102, name: 'Calles de Cajamarca', visible: true, color: '#000000', url: `/maps/Map1/calles_wgs84.json` }
           ];
           break;
         case 2:
