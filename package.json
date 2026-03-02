@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.19.2",
+    "@turf/turf": "^7.3.4",
+    "geojson-path-finder": "^2.1.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
