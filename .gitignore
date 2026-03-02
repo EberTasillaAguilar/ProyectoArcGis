@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Avoid GitHub 100MB limit
+public/maps/Map1/ruta_zonas_norte.json
