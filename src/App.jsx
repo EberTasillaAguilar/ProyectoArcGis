@@ -7,13 +7,57 @@ import './index.css';
 function App() {
   const [activeMap, setActiveMap] = useState(1);
   const [layers, setLayers] = useState([]);
-  const [center, setCenter] = useState([-7.165, -78.508]); // Cajamarca, Peru
-  const [zoom, setZoom] = useState(16);
+  const [center, setCenter] = useState([-5.0, -79.0]); // Northern Peru
+  const [zoom, setZoom] = useState(7);
   const [theme, setTheme] = useState('dark');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [activeLayerId, setActiveLayerId] = useState(null);
+  const [routeResult, setRouteResult] = useState(null);
+  const [isNetworkMode, setIsNetworkMode] = useState(false);
+  const [networkPoints, setNetworkPoints] = useState({ start: null, end: null });
+  const [selectedFeature, setSelectedFeature] = useState(null); // { layerId, feature }
+  const [filters, setFilters] = useState({ district: '', province: '' });
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+  const toggleEditMode = () => setIsEditMode(prev => !prev);
+  const toggleNetworkMode = () => {
+    setIsEditMode(false);
+    setIsNetworkMode(prev => !prev);
+    setNetworkPoints({ start: null, end: null });
+    setRouteResult(null);
+  };
+
+  const updateLayerData = (layerId, newData) => {
+    setLayers(prev => prev.map(l => l.id === layerId ? { ...l, data: newData, lastUpdate: Date.now() } : l));
+  };
+
+  const updateFeatureProperties = (layerId, featureGeometryString, newProperties) => {
+    setLayers(prev => prev.map(layer => {
+      if (layer.id !== layerId || !layer.data) return layer;
+      const newFeatures = layer.data.features.map(f => {
+        if (JSON.stringify(f.geometry) === featureGeometryString) {
+          return { ...f, properties: { ...f.properties, ...newProperties } };
+        }
+        return f;
+      });
+      return { ...layer, data: { ...layer.data, features: newFeatures }, lastUpdate: Date.now() };
+    }));
+  };
+
+  // Clear results when switching maps
+  useEffect(() => {
+    setAnalysisResult(null);
+    setIsEditMode(false);
+    setActiveLayerId(null);
+    setRouteResult(null);
+    setIsNetworkMode(false);
+    setNetworkPoints({ start: null, end: null });
+    setSelectedFeature(null);
+    setFilters({ district: '', province: '' });
+  }, [activeMap]);
 
   // Load GeoJSON data based on map selection
   useEffect(() => {
@@ -23,24 +67,41 @@ function App() {
       switch (activeMap) {
         case 1:
           mapLayers = [
-            { id: 101, name: 'Parques', visible: true, color: '#10b981', url: `/maps/Map1/prueba_wgs84.json` },
-            { id: 102, name: 'Calles de Cajamarca', visible: true, color: '#000000', url: `/maps/Map1/calles_wgs84.json` }
+            { id: 101, name: 'Zona Norte Perú', visible: true, color: '#6366f1', url: `/maps/Map1/zona_norte_peru.json` },
+            { id: 102, name: 'Ríos Zona Norte', visible: true, color: '#3b82f6', url: `/maps/Map1/rios_zona_norte.json` },
+            { id: 103, name: 'Rutas Afectadas', visible: true, color: '#f59e0b', url: `/maps/Map1/rutas_afectadas_peru.json` },
+            { id: 104, name: 'Buffer Ríos Norte', visible: true, color: '#10b981', url: `/maps/Map1/buffer_norte_rios.json` },
+            { id: 105, name: 'Rutas Zona Norte', visible: false, color: '#ef4444', url: `/maps/Map1/ruta_zonas_norte_opt.json` }
           ];
           break;
         case 2:
           mapLayers = [
-            { id: 201, name: 'Parques y Recreación', visible: true, color: '#10b981', url: `/maps/Map2/layer1.json` },
-            { id: 202, name: 'Hidrología', visible: true, color: '#3b82f6', url: `/maps/Map2/layer2.json` }
+            { id: 201, name: 'Zona Norte Perú', visible: true, color: '#6366f1', url: `/maps/Map2/zona_norte_peru.json` },
+            { id: 202, name: 'Ríos Zona Norte', visible: true, color: '#3b82f6', url: `/maps/Map2/rios_zona_norte.json` },
+            { id: 203, name: 'Rutas Principales Afectadas', visible: true, color: '#ef4444', url: `/maps/Map2/rutas_principales_afectadas_zona_norte.json` },
+            { id: 204, name: 'Red Vial Principal', visible: false, color: '#f59e0b', url: `/maps/Map2/rutas_principales_zona_norte.json` },
+            { id: 205, name: 'Buffer Ríos Norte', visible: false, color: '#10b981', url: `/maps/Map2/buffer_norte_rios.json` },
           ];
           break;
         case 3:
           mapLayers = [
-            { id: 301, name: 'Red de Servicios', visible: true, color: '#f59e0b', url: `/maps/Map3/layer1.json` }
+            { id: 301, name: 'Rutas Logísticas', visible: true, color: '#f59e0b', url: `/maps/Map3/red_rutas_logisticas.json` },
+            { id: 302, name: 'Distritos Afectados', visible: true, color: '#ef4444', url: `/maps/Map3/distritos_logisticos_afectados.json` },
+            { id: 303, name: 'Distritos Norte', visible: false, color: '#6366f1', url: `/maps/Map3/distritos.json` }
           ];
           break;
-        case 4:
+        case 5:
           mapLayers = [
-            { id: 401, name: 'Demografía', visible: true, color: '#8b5cf6', url: `/maps/Map4/layer1.json` }
+            { id: 501, name: 'Demografía', visible: true, color: '#8b5cf6', url: `/maps/Map2/layer1.json` }
+          ];
+          break;
+        case 9:
+          mapLayers = [
+            { id: 901, name: 'Establecimientos Salud', visible: true, color: '#ef4444', url: `/maps/Map4/centros_salud_opt.json` },
+            { id: 902, name: 'Rutas Afectadas Salud', visible: true, color: '#f59e0b', url: `/maps/Map4/rutas_afectadas_opt.json` },
+            { id: 903, name: 'Rutas de Llegada', visible: true, color: '#10b981', url: `/maps/Map4/rutas_afectadas_llegada_salud_opt.json` },
+            { id: 904, name: 'Áreas de Servicio', visible: false, color: '#3b82f6', url: `/maps/Map4/areas_servicio_opt.json` },
+            { id: 905, name: 'Zona Norte Perú', visible: false, color: '#94a3b8', url: `/maps/Map1/zona_norte_peru.json` }
           ];
           break;
         default:
@@ -72,13 +133,10 @@ function App() {
 
   const handleMapSelect = (id) => {
     setActiveMap(id);
-    if (id === 1) {
-      setCenter([-7.165, -78.508]);
-      setZoom(16);
-    } else {
-      setCenter([4.61, -74.05]);
-      setZoom(13);
-    }
+    // Northern Peru region center
+    setCenter([-5.0, -79.0]);
+    setZoom(7);
+
     // Auto close sidebar on mobile after map selection
     if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
@@ -126,7 +184,15 @@ function App() {
         </div>
         <div style={{ fontSize: '0.9rem', opacity: 0.4 }}>/</div>
         <div style={{ fontSize: '0.9rem', opacity: 1, fontWeight: 700, color: 'var(--text-main)' }}>
-          {activeMap === 1 ? 'Infraestructura Urbana' : activeMap === 2 ? 'Ambiental' : activeMap === 3 ? 'Servicios Públicos' : 'Mapa Social'}
+          {activeMap === 1
+            ? 'Rutas Afectadas por Inundación'
+            : activeMap === 2
+              ? 'Carreteras Principales Afectadas'
+              : activeMap === 3
+                ? 'Distritos Afectados en Logística'
+                : activeMap === 9
+                  ? 'Alcance de Centros de Salud'
+                  : 'Mapa'}
         </div>
       </div>
 
@@ -137,9 +203,43 @@ function App() {
           layers={layers}
           onToggleLayer={handleToggleLayer}
           isOpen={isSidebarOpen}
+          analysisResult={analysisResult}
+          setAnalysisResult={setAnalysisResult}
+          isEditMode={isEditMode}
+          toggleEditMode={toggleEditMode}
+          activeLayerId={activeLayerId}
+          setActiveLayerId={setActiveLayerId}
+          routeResult={routeResult}
+          setRouteResult={setRouteResult}
+          isNetworkMode={isNetworkMode}
+          toggleNetworkMode={toggleNetworkMode}
+          selectedFeature={selectedFeature}
+          setSelectedFeature={setSelectedFeature}
+          updateFeatureProperties={updateFeatureProperties}
+          filters={filters}
+          setFilters={setFilters}
         />
-        <Map layers={layers} center={center} zoom={zoom} theme={theme} />
+        <Map
+          layers={layers}
+          center={center}
+          zoom={zoom}
+          theme={theme}
+          analysisResult={analysisResult}
+          isEditMode={isEditMode}
+          updateLayerData={updateLayerData}
+          activeLayerId={activeLayerId}
+          routeResult={routeResult}
+          isNetworkMode={isNetworkMode}
+          networkPoints={networkPoints}
+          setNetworkPoints={setNetworkPoints}
+          setRouteResult={setRouteResult}
+          setSelectedFeature={setSelectedFeature}
+          selectedFeature={selectedFeature}
+          filters={filters}
+        />
       </div>
+
+
 
       <div className="status-bar" style={{ height: '36px', background: 'var(--bg-sidebar)', borderTop: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 24px', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
         <div style={{ display: 'flex', gap: '20px' }}>
