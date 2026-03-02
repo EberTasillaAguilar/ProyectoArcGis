@@ -387,13 +387,13 @@ const LeyendaCarreteras = ({ theme }) => {
     const mainTypes = ['motorway', 'trunk', 'primary', 'secondary', 'tertiary'];
     return (
         <div style={{
-            position: 'absolute', bottom: '50px', left: '12px', zIndex: 1000,
+            position: 'absolute', top: '20px', right: '12px', zIndex: 1000,
             background: bg, border: `1px solid ${border}`, borderRadius: '12px',
             padding: '12px 16px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
             minWidth: '195px', pointerEvents: 'none'
         }}>
             <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1px', color: titleColor, textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '14px' }}>🛣️</span> Tipo de Carretera
+                <span style={{ fontSize: '14px' }}>🗺️</span> Tipo de Carretera
             </div>
             {mainTypes.map(k => {
                 const { color, label } = FCLASS_COLORS[k] || { color: FCLASS_DEFAULT, label: k };
