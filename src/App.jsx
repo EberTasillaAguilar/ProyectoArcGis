@@ -110,7 +110,9 @@ function App() {
 
       const updatedLayers = await Promise.all(mapLayers.map(async (layer) => {
         try {
-          const response = await fetch(layer.url);
+          // Busta la caché para asegurar que se carga el JSON recién convertido
+          const fetchUrl = `${layer.url}?t=${new Date().getTime()}`;
+          const response = await fetch(fetchUrl);
           if (response.ok) {
             const data = await response.json();
             return { ...layer, data };

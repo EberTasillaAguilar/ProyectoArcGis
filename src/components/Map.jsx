@@ -540,10 +540,22 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                                 // Sin filtro activo: mostrar todo
                                 if (!dTerm && !pTerm) return layer.data;
 
-                                // Detectar si ESTA capa tiene campos filtrables
-                                // Usamos la primera feature como muestra
                                 const sample = layer.data.features[0]?.properties || {};
-                                const hasFilterableFields =
+
+                                // ── Filtro por DEPARTAMEN (Map 1 y 2) ──────────────────
+                                const hasDepartamen = sample.DEPARTAMEN !== undefined;
+                                if (hasDepartamen && dTerm && !pTerm) {
+                                    const filtered = layer.data.features.filter(f => {
+                                        const dep = (f.properties?.DEPARTAMEN || '').toLowerCase();
+                                        return dep.includes(dTerm);
+                                    });
+                                    return filtered.length > 0
+                                        ? { ...layer.data, features: filtered }
+                                        : layer.data;
+                                }
+
+                                // ── Filtro por Provincia/Distrito (Map 3 y 9) ──────────
+                                const hasDistrictFields =
                                     sample.Nombre !== undefined ||
                                     sample.NOMBDIST !== undefined ||
                                     sample.Distrito !== undefined ||
@@ -553,23 +565,17 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                                     sample.Provincia !== undefined ||
                                     sample.PROVINCIA !== undefined;
 
-                                // Si la capa NO tiene campos de nombre/distrito/provincia,
-                                // mostrar TODAS sus features (ríos, rutas, buffers, etc.)
-                                if (!hasFilterableFields) return layer.data;
+                                // Capas sin campos filtrables → mostrar todo
+                                if (!hasDistrictFields) return layer.data;
 
-                                // Solo filtrar capas que SÍ tienen esos campos
                                 const filteredFeatures = layer.data.features.filter(f => {
                                     const props = f.properties || {};
                                     const fDist = (props.Nombre || props.NOMBDIST || props.Distrito || props.DISTRITO || props.distrito || '').toLowerCase();
                                     const fProv = (props.NOMBPROV || props.Provincia || props.PROVINCIA || props.provincia || '').toLowerCase();
-
                                     const dMatch = !dTerm || fDist.includes(dTerm);
                                     const pMatch = !pTerm || fProv.includes(pTerm);
-
                                     return dMatch && pMatch;
                                 });
-                                // Si el filtro no encontró nada en esta capa, mostrar todo
-                                // (evita que capas parcialmente filtrables queden vacías)
                                 if (filteredFeatures.length === 0) return layer.data;
                                 return { ...layer.data, features: filteredFeatures };
                             })()}
@@ -600,9 +606,9 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                                 const base = geojsonStyle(feature, layer.color);
 
                                 // ====================================================
-                                // MAPA 2 — Carreteras: Colorear por tipo (fclass)
+                                // MAPA 1 y 2 — Carreteras: Colorear por tipo (fclass)
                                 // ====================================================
-                                if ((layer.id === 203 || layer.id === 204) && props.fclass) {
+                                if ([103, 105, 203, 204].includes(layer.id) && props.fclass) {
                                     return {
                                         ...base,
                                         color: getFclassColor(props.fclass),
@@ -754,8 +760,8 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                 <LeyendaRutasLogisticas theme={theme} />
             )}
 
-            {/* Leyenda Carreteras mapa 2 */}
-            {activeLayers.some(l => l.id === 203 || l.id === 204) && (
+            {/* Leyenda Carreteras mapa 1 y 2 */}
+            {activeLayers.some(l => [103, 105, 203, 204].includes(l.id)) && (
                 <LeyendaCarreteras theme={theme} />
             )}
         </div>
