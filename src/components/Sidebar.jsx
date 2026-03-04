@@ -8,6 +8,7 @@ const MapSelector = ({ activeMap, onMapSelect }) => {
     { id: 1, name: 'Rutas Inundación', icon: <MapIcon size={22} /> },
     { id: 2, name: 'Carreteras Afectadas', icon: <MapIcon size={22} /> },
     { id: 3, name: 'Logística Distritos', icon: <MapIcon size={22} /> },
+    { id: 5, name: 'Maquinarias', icon: <MapIcon size={22} /> },
     { id: 9, name: 'Centros de Salud', icon: <Zap size={22} /> },
   ];
 
@@ -142,7 +143,7 @@ const CustomEditor = () => null;
 const SpatialAnalysis = () => null;
 
 const DataFilter = ({ layers, activeMap, filters, setFilters }) => {
-  if (activeMap !== 1 && activeMap !== 2 && activeMap !== 3 && activeMap !== 9) return null;
+  if (activeMap !== 1 && activeMap !== 2 && activeMap !== 3 && activeMap !== 5 && activeMap !== 9) return null;
 
   const selectStyle = { padding: '10px', borderRadius: '10px', background: 'var(--bg-sidebar)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.85rem' };
   const inputStyle = { padding: '10px', border: '1px solid var(--border-color)', borderRadius: '10px', background: 'var(--bg-sidebar)', color: 'var(--text-main)', fontSize: '0.85rem' };
