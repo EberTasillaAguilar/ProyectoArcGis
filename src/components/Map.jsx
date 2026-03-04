@@ -413,6 +413,72 @@ const LeyendaCarreteras = ({ theme }) => {
     );
 };
 
+// Leyenda del mapa de Maquinarias — Mapa 5
+const LeyendaMaquinarias = ({ theme, activeLayers }) => {
+    const textColor = theme === 'dark' ? '#e2e8f0' : '#1e293b';
+    const titleColor = theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+    const bg = theme === 'dark' ? 'rgba(15,23,42,0.93)' : 'rgba(255,255,255,0.97)';
+    const border = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+    const hasBases = activeLayers.some(l => l.id === 505);
+    const hasRutasLlegada = activeLayers.some(l => l.id === 506);
+    const hasRutasAf = activeLayers.some(l => l.id === 504);
+
+    return (
+        <div style={{
+            position: 'absolute', bottom: '50px', left: '12px', zIndex: 1000,
+            background: bg, border: `1px solid ${border}`, borderRadius: '12px',
+            padding: '12px 16px', boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+            minWidth: '190px', pointerEvents: 'none'
+        }}>
+            <div style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1px', color: titleColor, textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '14px' }}>🚜</span> Gestión de Maquinarias
+            </div>
+
+            <div style={{ fontSize: '10px', fontWeight: 700, color: titleColor, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Capas</div>
+
+            {hasBases && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#f59e0b', border: '1px solid #fff', flexShrink: 0 }} />
+                    <span style={{ fontSize: '11px', fontWeight: 500, color: textColor }}>Bases de Maquinaria</span>
+                </div>
+            )}
+            {hasRutasAf && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{ width: '28px', height: '5px', borderRadius: '2px', background: '#ef4444', flexShrink: 0 }} />
+                    <span style={{ fontSize: '11px', fontWeight: 500, color: textColor }}>Todas las Rutas Afectadas</span>
+                </div>
+            )}
+            {hasRutasLlegada && (
+                <>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', marginBottom: '6px' }}>
+                        Tiempo de Llegada (min)
+                    </div>
+                    {[
+                        { label: '0 – 30 min', color: '#10b981' },
+                        { label: '30 – 60 min', color: '#84cc16' },
+                        { label: '60 – 90 min', color: '#eab308' },
+                        { label: '90 – 120 min', color: '#f97316' },
+                        { label: '> 120 min', color: '#ef4444' }
+                    ].map(({ label, color }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                            <div style={{ width: '28px', height: '5px', borderRadius: '2px', background: color, flexShrink: 0 }} />
+                            <span style={{ fontSize: '11px', fontWeight: 500, color: textColor }}>{label}</span>
+                        </div>
+                    ))}
+                    <div style={{ borderTop: `1px solid ${border}`, margin: '8px 0' }} />
+                </>
+            )}
+            {hasRutasAf && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{ width: '28px', height: '4px', background: '#ef4444', borderRadius: '2px', flexShrink: 0 }} />
+                    <span style={{ fontSize: '11px', fontWeight: 500, color: textColor }}>Rutas Afectadas</span>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLayerData, activeLayerId, isNetworkMode, networkPoints, setNetworkPoints, routeResult, setRouteResult, setSelectedFeature, selectedFeature, filters }) => {
     const [activeLayers, setActiveLayers] = useState([]);
 
@@ -478,19 +544,8 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                 mouseout: (e) => {
                     const l = e.target;
                     const parentLayer = layers.find(la => la.id === layerId);
-                    // Restaurar color de departamento si aplica
-                    if (feature.properties?.DEPARTAMEN) {
-                        const depColor = getDepartamentoColor(feature.properties);
-                        l.setStyle({
-                            fillColor: depColor,
-                            color: depColor,
-                            weight: 2,
-                            fillOpacity: 0.55,
-                            opacity: 1
-                        });
-                    } else {
-                        const baseStyle = geojsonStyle(feature, parentLayer?.color);
-                        l.setStyle(baseStyle);
+                    if (parentLayer) {
+                        l.setStyle(getFeatureStyle(feature, parentLayer));
                     }
                 }
             });
@@ -513,9 +568,119 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
             fillColor: finalColor,
             weight: isLine ? 4 : 1,
             opacity: 1,
-            color: finalColor,
+            color: isLine ? finalColor : (theme === 'dark' ? '#1e293b' : 'white'),
             fillOpacity: isLine ? 0 : 0.6
         };
+    };
+
+    const getFeatureStyle = (feature, layer) => {
+        const base = geojsonStyle(feature, layer.color);
+        const props = feature.properties || {};
+
+        if ([103, 105, 203, 204].includes(layer.id) && props.fclass) {
+            return {
+                ...base,
+                color: getFclassColor(props.fclass),
+                weight: props.fclass === 'motorway' || props.fclass === 'trunk' ? 4 : 2.5,
+                opacity: 0.9,
+                fillOpacity: 0
+            };
+        }
+
+        if (layer.id === 301 && props.Time_total !== undefined) {
+            const routeColor = getRutaLogColor(props.Time_total);
+            return {
+                ...base,
+                color: routeColor,
+                weight: 3,
+                opacity: 0.9,
+                fillOpacity: 0
+            };
+        }
+
+        // Custom Styling for Map 9 - Areas de Servicio
+        if (layer.id === 904 && props.Name) {
+            const rangeMatch = props.Name.match(/(\d+)\s*-\s*(\d+)$/);
+            if (rangeMatch) {
+                const val = parseInt(rangeMatch[2]);
+                let redColor = '#fee2e2';
+                if (val <= 30) redColor = '#fecaca';
+                else if (val <= 60) redColor = '#fca5a5';
+                else if (val <= 90) redColor = '#f87171';
+                else if (val <= 120) redColor = '#ef4444';
+                else redColor = '#b91c1c';
+                return { ...base, fillColor: redColor, color: redColor, fillOpacity: 0.7 };
+            }
+        }
+
+        // Custom Styling for Map 9 - Rutas Afectadas
+        if (layer.id === 903 && props.Name) {
+            const rangeMatch = props.Name.match(/(\d+)\s*-\s*(\d+)$/);
+            if (rangeMatch) {
+                const val = parseInt(rangeMatch[2]);
+                let routeColor = '#10b981';
+                if (val <= 30) routeColor = '#10b981';
+                else if (val <= 60) routeColor = '#84cc16';
+                else if (val <= 90) routeColor = '#06b6d4';
+                else if (val <= 120) routeColor = '#3b82f6';
+                else routeColor = '#1e3a8a';
+                return { ...base, color: routeColor, weight: 6, opacity: 0.8 };
+            }
+        }
+
+        // Custom Styling for Map 9 - Rutas (id 902)
+        if (layer.id === 902) {
+            return { ...base, color: '#f59e0b', weight: 4, dashArray: '5, 10' };
+        }
+
+        // Custom Styling for Map 5 - Rutas Maquinaria (id 506) con Tiempo de LLegada
+        if (layer.id === 506 && props.Tiempo_Min !== undefined) {
+            const val = parseInt(props.Tiempo_Min);
+            let routeColor = '#10b981';
+            if (val <= 30) routeColor = '#10b981';
+            else if (val <= 60) routeColor = '#84cc16';
+            else if (val <= 90) routeColor = '#eab308';
+            else if (val <= 120) routeColor = '#f97316';
+            else routeColor = '#ef4444';
+            return { ...base, color: routeColor, weight: 6, opacity: 0.9 };
+        }
+
+        // ZONA NORTE PERÚ: Colorear por Departamento solo si es poligono
+        if (props.DEPARTAMEN && (!feature.geometry || !feature.geometry.type.includes('LineString'))) {
+            const depColor = getDepartamentoColor(props);
+            return {
+                ...base,
+                fillColor: depColor,
+                color: depColor,
+                weight: 2,
+                fillOpacity: 0.55,
+                opacity: 1
+            };
+        }
+
+        const dTerm = filters?.district?.toLowerCase() || '';
+        const pTerm = filters?.province?.toLowerCase() || '';
+        if ((dTerm || pTerm)) {
+            const hasFilterableField =
+                props.Nombre !== undefined ||
+                props.NOMBDIST !== undefined ||
+                props.Distrito !== undefined ||
+                props.DISTRITO !== undefined ||
+                props.distrito !== undefined ||
+                props.NOMBPROV !== undefined ||
+                props.Provincia !== undefined ||
+                props.PROVINCIA !== undefined;
+
+            if (hasFilterableField) {
+                return { ...base, weight: base.weight + 3, color: '#f59e0b', fillOpacity: 0.9, opacity: 1 };
+            }
+        }
+
+        if (selectedFeature && JSON.stringify(feature.geometry) === JSON.stringify(selectedFeature.feature.geometry)) {
+            return { ...base, weight: base.weight + 5, color: '#f59e0b', opacity: 1 };
+        }
+
+        return base;
     };
 
     return (
@@ -576,7 +741,6 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                                     const pMatch = !pTerm || fProv.includes(pTerm);
                                     return dMatch && pMatch;
                                 });
-                                if (filteredFeatures.length === 0) return layer.data;
                                 return { ...layer.data, features: filteredFeatures };
                             })()}
                             pointToLayer={(feature, latlng) => {
@@ -601,112 +765,7 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                                     fillOpacity: 0.8
                                 });
                             }}
-                            style={(feature) => {
-                                const props = feature.properties || {};
-                                const base = geojsonStyle(feature, layer.color);
-
-                                // ====================================================
-                                // MAPA 1 y 2 — Carreteras: Colorear por tipo (fclass)
-                                // ====================================================
-                                if ([103, 105, 203, 204].includes(layer.id) && props.fclass) {
-                                    return {
-                                        ...base,
-                                        color: getFclassColor(props.fclass),
-                                        weight: props.fclass === 'motorway' || props.fclass === 'trunk' ? 4 : 2.5,
-                                        opacity: 0.9,
-                                        fillOpacity: 0
-                                    };
-                                }
-
-                                // ====================================================
-                                // ====================================================
-                                if (layer.id === 301 && props.Time_total !== undefined) {
-                                    const routeColor = getRutaLogColor(props.Time_total);
-                                    return {
-                                        ...base,
-                                        color: routeColor,
-                                        weight: 3,
-                                        opacity: 0.9,
-                                        fillOpacity: 0
-                                    };
-                                }
-
-                                // ====================================================
-                                // ZONA NORTE PERÚ: Colorear por Departamento
-                                // Se aplica a cualquier capa que use zona_norte_peru.json
-                                // Identificado porque tiene el campo DEPARTAMEN
-                                // ====================================================
-                                if (props.DEPARTAMEN) {
-                                    const depColor = getDepartamentoColor(props);
-                                    return {
-                                        ...base,
-                                        fillColor: depColor,
-                                        color: depColor,
-                                        weight: 2,
-                                        fillOpacity: 0.55,
-                                        opacity: 1
-                                    };
-                                }
-
-                                // Custom Styling for Map 9 - Areas de Servicio
-                                if (layer.id === 904 && props.Name) {
-                                    const rangeMatch = props.Name.match(/(\d+)\s*-\s*(\d+)$/);
-                                    if (rangeMatch) {
-                                        const val = parseInt(rangeMatch[2]);
-                                        let redColor = '#fee2e2';
-                                        if (val <= 30) redColor = '#fecaca';
-                                        else if (val <= 60) redColor = '#fca5a5';
-                                        else if (val <= 90) redColor = '#f87171';
-                                        else if (val <= 120) redColor = '#ef4444';
-                                        else redColor = '#b91c1c';
-                                        return { ...base, fillColor: redColor, color: redColor, fillOpacity: 0.7 };
-                                    }
-                                }
-
-                                // Custom Styling for Map 9 - Rutas Afectadas
-                                if (layer.id === 903 && props.Name) {
-                                    const rangeMatch = props.Name.match(/(\d+)\s*-\s*(\d+)$/);
-                                    if (rangeMatch) {
-                                        const val = parseInt(rangeMatch[2]);
-                                        let routeColor = '#10b981';
-                                        if (val <= 30) routeColor = '#10b981';
-                                        else if (val <= 60) routeColor = '#84cc16';
-                                        else if (val <= 90) routeColor = '#06b6d4';
-                                        else if (val <= 120) routeColor = '#3b82f6';
-                                        else routeColor = '#1e3a8a';
-                                        return { ...base, color: routeColor, weight: 6, opacity: 0.8 };
-                                    }
-                                }
-
-                                // Custom Styling for Map 9 - Rutas (id 902)
-                                if (layer.id === 902) {
-                                    return { ...base, color: '#f59e0b', weight: 4, dashArray: '5, 10' };
-                                }
-
-                                const dTerm = filters.district.toLowerCase();
-                                const pTerm = filters.province.toLowerCase();
-                                if ((dTerm || pTerm)) {
-                                    // Solo resaltar en amarillo las capas con campos de nombre/distrito
-                                    const hasFilterableField =
-                                        props.Nombre !== undefined ||
-                                        props.NOMBDIST !== undefined ||
-                                        props.Distrito !== undefined ||
-                                        props.DISTRITO !== undefined ||
-                                        props.distrito !== undefined ||
-                                        props.NOMBPROV !== undefined ||
-                                        props.Provincia !== undefined ||
-                                        props.PROVINCIA !== undefined;
-
-                                    if (hasFilterableField) {
-                                        return { ...base, weight: base.weight + 3, color: '#f59e0b', fillOpacity: 0.9, opacity: 1 };
-                                    }
-                                }
-
-                                if (selectedFeature && JSON.stringify(feature.geometry) === JSON.stringify(selectedFeature.feature.geometry)) {
-                                    return { ...base, weight: base.weight + 5, color: '#f59e0b', opacity: 1 };
-                                }
-                                return base;
-                            }}
+                            style={(feature) => getFeatureStyle(feature, layer)}
                             onEachFeature={(f, l) => {
                                 onEachFeature(f, l, layer.id);
                                 const props = f.properties || {};
@@ -723,7 +782,7 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                                 }
 
                                 // Labels para Zona Norte Perú - coloreados por departamento
-                                if (f.properties && f.properties.DEPARTAMEN) {
+                                if (layer.id < 300 && f.properties && f.properties.DEPARTAMEN) {
                                     const depName = f.properties.DEPARTAMEN.trim();
                                     const depColor = getDepartamentoColor(f.properties);
                                     // Siempre mostrar label permanente con el nombre del departamento
@@ -745,8 +804,8 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
                 <ScaleControl position="bottomleft" imperial={false} />
             </MapContainer>
 
-            {/* Leyenda de departamentos zona norte - visible cuando hay capa activa con DEPARTAMEN */}
-            {activeLayers.some(l => l.data?.features?.some(f => f.properties?.DEPARTAMEN)) && (
+            {/* Leyenda de departamentos zona norte - visible cuando hay capa activa con DEPARTAMEN (Solo Mapas 1 y 2) */}
+            {activeLayers.some(l => l.id < 300 && l.data?.features?.some(f => f.properties?.DEPARTAMEN)) && (
                 <LeyendaZonaNorte theme={theme} />
             )}
 
@@ -763,6 +822,11 @@ const Map = ({ layers, center, zoom, theme, analysisResult, isEditMode, updateLa
             {/* Leyenda Carreteras mapa 1 y 2 */}
             {activeLayers.some(l => [103, 105, 203, 204].includes(l.id)) && (
                 <LeyendaCarreteras theme={theme} />
+            )}
+
+            {/* Leyenda Maquinarias mapa 5 */}
+            {activeLayers.some(l => [501, 502, 503, 504, 505, 506].includes(l.id)) && (
+                <LeyendaMaquinarias theme={theme} activeLayers={activeLayers} />
             )}
         </div>
     );

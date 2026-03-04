@@ -92,7 +92,12 @@ function App() {
           break;
         case 5:
           mapLayers = [
-            { id: 501, name: 'Demografía', visible: true, color: '#8b5cf6', url: `/maps/Map2/layer1.json` }
+            { id: 501, name: 'Zona Norte Perú', visible: false, color: '#94a3b8', url: `/maps/Map5/zona_norte_peru_utm.json` },
+            { id: 502, name: 'Distritos Norte', visible: true, color: '#6366f1', url: `/maps/Map5/zona_norte_con_distritos_utm.json` },
+            { id: 503, name: 'Capitales de Provincia', visible: false, color: '#8b5cf6', url: `/maps/Map5/capitales_provincia_utm.json` },
+            { id: 504, name: 'Rutas Afectadas', visible: false, color: '#ef4444', url: `/maps/Map5/rutas_afectadas_zona_norte_utm.json` },
+            { id: 505, name: 'Bases Maquinarias', visible: true, color: '#f59e0b', url: `/maps/Map5/bases_maquinarias.json` },
+            { id: 506, name: 'Rutas Maquinaria', visible: true, color: '#10b981', url: `/maps/Map5/resultado_rutas_maquinaria.json` }
           ];
           break;
         case 9:
@@ -192,9 +197,11 @@ function App() {
               ? 'Carreteras Principales Afectadas'
               : activeMap === 3
                 ? 'Distritos Afectados en Logística'
-                : activeMap === 9
-                  ? 'Alcance de Centros de Salud'
-                  : 'Mapa'}
+                : activeMap === 5
+                  ? 'Gestión de Maquinarias'
+                  : activeMap === 9
+                    ? 'Alcance de Centros de Salud'
+                    : 'Mapa'}
         </div>
       </div>
 
